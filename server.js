@@ -9,10 +9,11 @@ const swaggerUi = require('swagger-ui-express');
 
 const config = require('./config/config');
 const connectDB = require('./config/database');
-
+require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const doctorRoutes = require('./routes/doctors');
 const appointmentRoutes = require('./routes/appointments');
+
 
 const app = express();
 
