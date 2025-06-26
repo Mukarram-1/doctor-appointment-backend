@@ -7,7 +7,6 @@ class EmailService {
     this.init();
   }
 
-  // Initialize email transporter
   init() {
     if (!config.EMAIL.USER || !config.EMAIL.PASS) {
       console.warn('Email configuration not complete. Email features will be disabled.');
@@ -27,7 +26,6 @@ class EmailService {
       }
     });
 
-    // Verify connection configuration
     this.transporter.verify((error, success) => {
       if (error) {
         console.error('Email configuration error:', error);
@@ -37,7 +35,6 @@ class EmailService {
     });
   }
 
-  // Send appointment confirmation email to user
   async sendAppointmentConfirmation(appointment, user, doctor) {
     if (!this.transporter) {
       console.log('Email service not configured. Skipping email.');
@@ -102,7 +99,6 @@ class EmailService {
     }
   }
 
-  // Send appointment cancellation email
   async sendAppointmentCancellation(appointment, user, doctor, cancellationReason) {
     if (!this.transporter) {
       console.log('Email service not configured. Skipping email.');
@@ -154,7 +150,6 @@ class EmailService {
     }
   }
 
-  // Send appointment reminder email
   async sendAppointmentReminder(appointment, user, doctor) {
     if (!this.transporter) {
       console.log('Email service not configured. Skipping email.');
@@ -207,7 +202,6 @@ class EmailService {
     }
   }
 
-  // Send welcome email to new users
   async sendWelcomeEmail(user) {
     if (!this.transporter) {
       console.log('Email service not configured. Skipping email.');
@@ -261,5 +255,4 @@ class EmailService {
   }
 }
 
-// Export singleton instance
 module.exports = new EmailService(); 

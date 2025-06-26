@@ -3,20 +3,16 @@ const JWTUtils = require('../utils/jwt');
 const emailService = require('./emailService');
 
 class AuthService {
-  // Register a new user
   async register(userData) {
     try {
-      // Check if user already exists
       const existingUser = await User.findByEmail(userData.email);
       if (existingUser) {
         throw new Error('User with this email already exists');
       }
 
-      // Create new user
       const user = new User(userData);
       await user.save();
 
-      // Generate tokens
       const tokenPayload = {
         userId: user._id,
         email: user.email,
@@ -25,10 +21,8 @@ class AuthService {
       
       const tokens = JWTUtils.generateTokenPair(tokenPayload);
       
-      // Save refresh token to user
       await user.addRefreshToken(tokens.refreshToken);
 
-      // Send welcome email (don't wait for it)
       emailService.sendWelcomeEmail(user).catch(error => {
         console.error('Failed to send welcome email:', error);
       });
@@ -42,10 +36,8 @@ class AuthService {
     }
   }
 
-  // Login user
   async login(email, password) {
     try {
-      // Find user with password field included
       const user = await User.findByEmail(email).select('+password');
       
       if (!user) {
@@ -56,17 +48,14 @@ class AuthService {
         throw new Error('Account is deactivated');
       }
 
-      // Check password
       const isPasswordValid = await user.matchPassword(password);
       if (!isPasswordValid) {
         throw new Error('Invalid email or password');
       }
 
-      // Update last login
       user.lastLogin = new Date();
       await user.save();
 
-      // Generate tokens
       const tokenPayload = {
         userId: user._id,
         email: user.email,
@@ -75,7 +64,6 @@ class AuthService {
       
       const tokens = JWTUtils.generateTokenPair(tokenPayload);
       
-      // Save refresh token to user
       await user.addRefreshToken(tokens.refreshToken);
 
       return {
@@ -87,13 +75,10 @@ class AuthService {
     }
   }
 
-  // Refresh access token
   async refreshToken(refreshToken) {
     try {
-      // Verify refresh token
       const decoded = JWTUtils.verifyRefreshToken(refreshToken);
       
-      // Find user and check if refresh token exists
       const user = await User.findById(decoded.userId);
       if (!user) {
         throw new Error('Invalid refresh token');
@@ -111,7 +96,6 @@ class AuthService {
         throw new Error('Account is deactivated');
       }
 
-      // Generate new tokens
       const tokenPayload = {
         userId: user._id,
         email: user.email,
@@ -120,7 +104,6 @@ class AuthService {
       
       const tokens = JWTUtils.generateTokenPair(tokenPayload);
       
-      // Replace old refresh token with new one
       await user.removeRefreshToken(refreshToken);
       await user.addRefreshToken(tokens.refreshToken);
 
@@ -133,7 +116,6 @@ class AuthService {
     }
   }
 
-  // Logout user (remove refresh token)
   async logout(userId, refreshToken) {
     try {
       const user = await User.findById(userId);
@@ -149,7 +131,6 @@ class AuthService {
     }
   }
 
-  // Logout from all devices
   async logoutAll(userId) {
     try {
       const user = await User.findById(userId);
@@ -165,7 +146,6 @@ class AuthService {
     }
   }
 
-  // Get user profile
   async getProfile(userId) {
     try {
       const user = await User.findById(userId);
@@ -179,10 +159,8 @@ class AuthService {
     }
   }
 
-  // Update user profile
   async updateProfile(userId, updateData) {
     try {
-      // Remove sensitive fields from update data
       const { password, role, refreshTokens, ...allowedUpdates } = updateData;
       
       const user = await User.findByIdAndUpdate(
@@ -201,7 +179,6 @@ class AuthService {
     }
   }
 
-  // Change password
   async changePassword(userId, currentPassword, newPassword) {
     try {
       const user = await User.findById(userId).select('+password');
@@ -209,17 +186,14 @@ class AuthService {
         throw new Error('User not found');
       }
 
-      // Verify current password
       const isCurrentPasswordValid = await user.matchPassword(currentPassword);
       if (!isCurrentPasswordValid) {
         throw new Error('Current password is incorrect');
       }
 
-      // Update password
       user.password = newPassword;
       await user.save();
 
-      // Remove all refresh tokens to force re-login
       await user.removeAllRefreshTokens();
 
       return { message: 'Password changed successfully. Please login again.' };
@@ -228,7 +202,6 @@ class AuthService {
     }
   }
 
-  // Verify token validity
   async verifyToken(token) {
     try {
       const decoded = JWTUtils.verifyAccessToken(token);

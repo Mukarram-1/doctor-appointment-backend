@@ -2,7 +2,6 @@ const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
 
 class DoctorService {
-  // Get all doctors with pagination, search, and filters
   async getAllDoctors(options = {}) {
     try {
       const {
@@ -21,10 +20,8 @@ class DoctorService {
       const skip = (page - 1) * limit;
       const sortOrder = order === 'desc' ? -1 : 1;
 
-      // Build query
       let query = { isActive };
 
-      // Add search conditions
       if (search) {
         query.$text = { $search: search };
       }
@@ -44,14 +41,12 @@ class DoctorService {
         };
       }
 
-      // Build sort object
       let sortObj = {};
       if (search && query.$text) {
         sortObj.score = { $meta: 'textScore' };
       }
       sortObj[sort] = sortOrder;
 
-      // Execute query with pagination
       const [doctors, total] = await Promise.all([
         Doctor.find(query)
           .sort(sortObj)
@@ -79,7 +74,6 @@ class DoctorService {
     }
   }
 
-  // Get doctor by ID
   async getDoctorById(doctorId) {
     try {
       const doctor = await Doctor.findById(doctorId);
@@ -98,10 +92,8 @@ class DoctorService {
     }
   }
 
-  // Create new doctor (Admin only)
   async createDoctor(doctorData) {
     try {
-      // Check if doctor with same email already exists
       const existingDoctor = await Doctor.findOne({ 
         'contact.email': doctorData.contact.email 
       });
@@ -119,10 +111,8 @@ class DoctorService {
     }
   }
 
-  // Update doctor (Admin only)
   async updateDoctor(doctorId, updateData) {
     try {
-      // Remove fields that shouldn't be updated directly
       const { rating, totalReviews, ...allowedUpdates } = updateData;
 
       const doctor = await Doctor.findByIdAndUpdate(
@@ -144,10 +134,8 @@ class DoctorService {
     }
   }
 
-  // Soft delete doctor (Admin only)
   async deleteDoctor(doctorId) {
     try {
-      // Check if doctor has any active appointments
       const activeAppointments = await Appointment.countDocuments({
         doctorId,
         status: { $in: ['pending', 'confirmed'] },
@@ -168,7 +156,6 @@ class DoctorService {
         throw new Error('Doctor not found');
       }
 
-      // Cancel all future pending appointments
       await Appointment.updateMany(
         {
           doctorId,
@@ -189,7 +176,6 @@ class DoctorService {
     }
   }
 
-  // Get doctors by specialty
   async getDoctorsBySpecialty(specialty, options = {}) {
     try {
       const {
@@ -223,7 +209,6 @@ class DoctorService {
     }
   }
 
-  // Search doctors
   async searchDoctors(searchTerm, options = {}) {
     try {
       const {
@@ -267,7 +252,6 @@ class DoctorService {
     }
   }
 
-  // Get doctor availability for a specific date
   async getDoctorAvailability(doctorId, date) {
     try {
       const doctor = await Doctor.findById(doctorId);
@@ -278,7 +262,6 @@ class DoctorService {
 
       const dayOfWeek = new Date(date).toLocaleDateString('en-US', { weekday: 'long' });
       
-      // Check if doctor is available on this day
       const dayAvailability = doctor.availability.find(slot => slot.day === dayOfWeek);
       
       if (!dayAvailability) {
@@ -288,7 +271,6 @@ class DoctorService {
         };
       }
 
-      // Get existing appointments for this date
       const existingAppointments = await Appointment.find({
         doctorId,
         date: new Date(date),
@@ -312,7 +294,6 @@ class DoctorService {
     }
   }
 
-  // Get doctor statistics
   async getDoctorStats(doctorId) {
     try {
       const doctor = await Doctor.findById(doctorId);
@@ -365,7 +346,6 @@ class DoctorService {
     }
   }
 
-  // Get all specialties
   async getAllSpecialties() {
     try {
       const specialties = await Doctor.distinct('specialty', { isActive: true });
