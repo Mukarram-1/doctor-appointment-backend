@@ -1,7 +1,6 @@
 const appointmentService = require('../services/appointmentService');
 
 const appointmentController = {
-  // Book a new appointment (User only)
   async bookAppointment(req, res) {
     try {
       const appointment = await appointmentService.bookAppointment(req.userId, req.body);
@@ -25,7 +24,6 @@ const appointmentController = {
     }
   },
 
-  // Get user's appointments
   async getUserAppointments(req, res) {
     try {
       const options = {
@@ -52,7 +50,6 @@ const appointmentController = {
     }
   },
 
-  // Get all appointments (Admin only)
   async getAllAppointments(req, res) {
     try {
       const options = {
@@ -83,7 +80,6 @@ const appointmentController = {
     }
   },
 
-  // Get appointments based on user role
   async getAppointments(req, res) {
     try {
       if (req.userRole === 'admin') {
@@ -100,7 +96,6 @@ const appointmentController = {
     }
   },
 
-  // Get appointment by ID
   async getAppointmentById(req, res) {
     try {
       const appointment = await appointmentService.getAppointmentById(
@@ -126,7 +121,6 @@ const appointmentController = {
     }
   },
 
-  // Update appointment status (Admin only)
   async updateAppointmentStatus(req, res) {
     try {
       const appointment = await appointmentService.updateAppointmentStatus(
@@ -151,7 +145,6 @@ const appointmentController = {
     }
   },
 
-  // Cancel appointment (User or Admin)
   async cancelAppointment(req, res) {
     try {
       const appointment = await appointmentService.cancelAppointment(
@@ -178,7 +171,6 @@ const appointmentController = {
     }
   },
 
-  // Reschedule appointment (User or Admin)
   async rescheduleAppointment(req, res) {
     try {
       const appointment = await appointmentService.rescheduleAppointment(
@@ -206,7 +198,6 @@ const appointmentController = {
     }
   },
 
-  // Get appointment statistics (Admin only)
   async getAppointmentStats(req, res) {
     try {
       const filters = {
@@ -231,7 +222,6 @@ const appointmentController = {
     }
   },
 
-  // Get upcoming appointments (Admin only)
   async getUpcomingAppointments(req, res) {
     try {
       const days = parseInt(req.query.days) || 7;
@@ -251,7 +241,6 @@ const appointmentController = {
     }
   },
 
-  // Get my appointments (shortcut for users)
   async getMyAppointments(req, res) {
     try {
       const options = {
@@ -278,7 +267,6 @@ const appointmentController = {
     }
   },
 
-  // Get appointment history for a user (Admin only)
   async getUserAppointmentHistory(req, res) {
     try {
       const { userId } = req.params;
@@ -305,7 +293,6 @@ const appointmentController = {
     }
   },
 
-  // Get doctor's appointments (Admin only)
   async getDoctorAppointments(req, res) {
     try {
       const { doctorId } = req.params;
@@ -319,7 +306,6 @@ const appointmentController = {
         order: req.query.order || 'asc'
       };
 
-      // Override doctorId in options
       options.doctorId = doctorId;
 
       const result = await appointmentService.getAllAppointments(options);
