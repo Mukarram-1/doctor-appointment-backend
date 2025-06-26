@@ -16,7 +16,6 @@ const appointmentSchema = new mongoose.Schema({
     required: [true, 'Appointment date is required'],
     validate: {
       validator: function(value) {
-        // Ensure appointment date is not in the past
         const today = new Date();
         today.setHours(0, 0, 0, 0);
         return value >= today;
@@ -97,14 +96,12 @@ const appointmentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for better query performance
 appointmentSchema.index({ userId: 1, date: -1 });
 appointmentSchema.index({ doctorId: 1, date: -1 });
 appointmentSchema.index({ status: 1 });
 appointmentSchema.index({ date: 1, time: 1 });
 appointmentSchema.index({ createdAt: -1 });
 
-// Compound index to prevent double booking
 appointmentSchema.index(
   { doctorId: 1, date: 1, time: 1 },
   { 
@@ -115,7 +112,6 @@ appointmentSchema.index(
   }
 );
 
-// Virtual for appointment datetime
 appointmentSchema.virtual('appointmentDateTime').get(function() {
   const appointmentDate = new Date(this.date);
   const [hours, minutes] = this.time.split(':');
@@ -123,24 +119,21 @@ appointmentSchema.virtual('appointmentDateTime').get(function() {
   return appointmentDate;
 });
 
-// Virtual to check if appointment is upcoming
 appointmentSchema.virtual('isUpcoming').get(function() {
   const now = new Date();
   const appointmentDateTime = this.appointmentDateTime;
   return appointmentDateTime > now && (this.status === 'pending' || this.status === 'confirmed');
 });
 
-// Virtual to check if appointment can be cancelled
 appointmentSchema.virtual('canBeCancelled').get(function() {
   const now = new Date();
   const appointmentDateTime = this.appointmentDateTime;
   const hoursDifference = (appointmentDateTime - now) / (1000 * 60 * 60);
   
   return (this.status === 'pending' || this.status === 'confirmed') && 
-         hoursDifference >= 24; // Can cancel if appointment is at least 24 hours away
+         hoursDifference >= 24;
 });
 
-// Static method to find appointments by user
 appointmentSchema.statics.findByUser = function(userId, status = null) {
   const query = { userId };
   if (status) query.status = status;
@@ -149,8 +142,6 @@ appointmentSchema.statics.findByUser = function(userId, status = null) {
     .populate('doctorId', 'name specialty location.hospital contact.phone')
     .sort({ date: -1, time: -1 });
 };
-
-// Static method to find appointments by doctor
 appointmentSchema.statics.findByDoctor = function(doctorId, status = null) {
   const query = { doctorId };
   if (status) query.status = status;
@@ -159,8 +150,6 @@ appointmentSchema.statics.findByDoctor = function(doctorId, status = null) {
     .populate('userId', 'name email')
     .sort({ date: -1, time: -1 });
 };
-
-// Static method to check for conflicts
 appointmentSchema.statics.hasConflict = function(doctorId, date, time, excludeId = null) {
   const query = {
     doctorId,
@@ -175,8 +164,6 @@ appointmentSchema.statics.hasConflict = function(doctorId, date, time, excludeId
   
   return this.findOne(query);
 };
-
-// Static method to get upcoming appointments
 appointmentSchema.statics.getUpcomingAppointments = function(days = 7) {
   const today = new Date();
   const futureDate = new Date();
@@ -190,8 +177,6 @@ appointmentSchema.statics.getUpcomingAppointments = function(days = 7) {
   .populate('doctorId', 'name specialty contact.email')
   .sort({ date: 1, time: 1 });
 };
-
-// Pre-save middleware to set timestamps for status changes
 appointmentSchema.pre('save', function(next) {
   const now = new Date();
   
@@ -211,8 +196,6 @@ appointmentSchema.pre('save', function(next) {
   
   next();
 });
-
-// Transform output
 appointmentSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Appointment', appointmentSchema); 
