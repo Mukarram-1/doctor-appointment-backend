@@ -1,6 +1,6 @@
 const appointmentService = require('../services/appointmentService');
 
-class AppointmentController {
+const appointmentController = {
   // Book a new appointment (User only)
   async bookAppointment(req, res) {
     try {
@@ -23,7 +23,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get user's appointments
   async getUserAppointments(req, res) {
@@ -50,7 +50,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get all appointments (Admin only)
   async getAllAppointments(req, res) {
@@ -81,15 +81,15 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get appointments based on user role
   async getAppointments(req, res) {
     try {
       if (req.userRole === 'admin') {
-        return this.getAllAppointments(req, res);
+        return appointmentController.getAllAppointments(req, res);
       } else {
-        return this.getUserAppointments(req, res);
+        return appointmentController.getUserAppointments(req, res);
       }
     } catch (error) {
       console.error('Get appointments error:', error);
@@ -98,7 +98,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get appointment by ID
   async getAppointmentById(req, res) {
@@ -124,7 +124,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Update appointment status (Admin only)
   async updateAppointmentStatus(req, res) {
@@ -149,7 +149,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Cancel appointment (User or Admin)
   async cancelAppointment(req, res) {
@@ -176,7 +176,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Reschedule appointment (User or Admin)
   async rescheduleAppointment(req, res) {
@@ -204,7 +204,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get appointment statistics (Admin only)
   async getAppointmentStats(req, res) {
@@ -229,7 +229,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get upcoming appointments (Admin only)
   async getUpcomingAppointments(req, res) {
@@ -249,7 +249,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get my appointments (shortcut for users)
   async getMyAppointments(req, res) {
@@ -276,7 +276,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get appointment history for a user (Admin only)
   async getUserAppointmentHistory(req, res) {
@@ -303,7 +303,7 @@ class AppointmentController {
         message: error.message
       });
     }
-  }
+  },
 
   // Get doctor's appointments (Admin only)
   async getDoctorAppointments(req, res) {
@@ -338,6 +338,6 @@ class AppointmentController {
       });
     }
   }
-}
+};
 
-module.exports = new AppointmentController(); 
+module.exports = appointmentController; 
