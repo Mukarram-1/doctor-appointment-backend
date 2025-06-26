@@ -1,7 +1,6 @@
 const authService = require('../services/authService');
 
 class AuthController {
-  // Register a new user
   async register(req, res) {
     try {
       const result = await authService.register(req.body);
@@ -14,7 +13,6 @@ class AuthController {
     } catch (error) {
       console.error('Registration error:', error);
       
-      // Handle duplicate key error
       if (error.code === 11000) {
         return res.status(400).json({
           success: false,
@@ -29,18 +27,16 @@ class AuthController {
     }
   }
 
-  // Login user
   async login(req, res) {
     try {
       const { email, password } = req.body;
       const result = await authService.login(email, password);
       
-      // Set refresh token as httpOnly cookie
       res.cookie('refreshToken', result.tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000
       });
       
       res.json({
@@ -62,7 +58,6 @@ class AuthController {
     }
   }
 
-  // Refresh access token
   async refreshToken(req, res) {
     try {
       const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -76,12 +71,11 @@ class AuthController {
       
       const result = await authService.refreshToken(refreshToken);
       
-      // Update refresh token cookie
       res.cookie('refreshToken', result.tokens.refreshToken, {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'strict',
-        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+        maxAge: 7 * 24 * 60 * 60 * 1000
       });
       
       res.json({
@@ -97,7 +91,6 @@ class AuthController {
     } catch (error) {
       console.error('Token refresh error:', error);
       
-      // Clear invalid refresh token cookie
       res.clearCookie('refreshToken');
       
       res.status(401).json({
@@ -107,7 +100,6 @@ class AuthController {
     }
   }
 
-  // Logout user
   async logout(req, res) {
     try {
       const refreshToken = req.cookies.refreshToken || req.body.refreshToken;
@@ -116,7 +108,6 @@ class AuthController {
         await authService.logout(req.userId, refreshToken);
       }
       
-      // Clear refresh token cookie
       res.clearCookie('refreshToken');
       
       res.json({
@@ -126,7 +117,6 @@ class AuthController {
     } catch (error) {
       console.error('Logout error:', error);
       
-      // Clear cookie even if there's an error
       res.clearCookie('refreshToken');
       
       res.status(500).json({
@@ -136,28 +126,6 @@ class AuthController {
     }
   }
 
-  // Logout from all devices
-  async logoutAll(req, res) {
-    try {
-      await authService.logoutAll(req.userId);
-      
-      // Clear refresh token cookie
-      res.clearCookie('refreshToken');
-      
-      res.json({
-        success: true,
-        message: 'Logged out from all devices successfully'
-      });
-    } catch (error) {
-      console.error('Logout all error:', error);
-      res.status(500).json({
-        success: false,
-        message: 'Failed to logout from all devices'
-      });
-    }
-  }
-
-  // Get current user profile
   async getProfile(req, res) {
     try {
       const user = await authService.getProfile(req.userId);
@@ -176,7 +144,6 @@ class AuthController {
     }
   }
 
-  // Update user profile
   async updateProfile(req, res) {
     try {
       const user = await authService.updateProfile(req.userId, req.body);
@@ -195,41 +162,6 @@ class AuthController {
     }
   }
 
-  // Change password
-  async changePassword(req, res) {
-    try {
-      const { currentPassword, newPassword } = req.body;
-      
-      if (!currentPassword || !newPassword) {
-        return res.status(400).json({
-          success: false,
-          message: 'Current password and new password are required'
-        });
-      }
-      
-      const result = await authService.changePassword(
-        req.userId,
-        currentPassword,
-        newPassword
-      );
-      
-      // Clear refresh token cookie to force re-login
-      res.clearCookie('refreshToken');
-      
-      res.json({
-        success: true,
-        message: result.message
-      });
-    } catch (error) {
-      console.error('Change password error:', error);
-      res.status(400).json({
-        success: false,
-        message: error.message
-      });
-    }
-  }
-
-  // Verify token
   async verifyToken(req, res) {
     try {
       const authHeader = req.header('Authorization');
@@ -265,7 +197,6 @@ class AuthController {
     }
   }
 
-  // Get current user info (used by authenticated middleware)
   async me(req, res) {
     try {
       res.json({
