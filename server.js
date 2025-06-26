@@ -10,25 +10,19 @@ const swaggerUi = require('swagger-ui-express');
 const config = require('./config/config');
 const connectDB = require('./config/database');
 
-// Import routes
 const authRoutes = require('./routes/auth');
 const doctorRoutes = require('./routes/doctors');
 const appointmentRoutes = require('./routes/appointments');
 
 const app = express();
 
-// Connect to MongoDB
 connectDB();
-
-// Trust proxy for rate limiting behind reverse proxy
 app.set('trust proxy', 1);
 
-// Security middleware
 app.use(helmet({
   crossOriginResourcePolicy: { policy: "cross-origin" }
 }));
 
-// CORS configuration
 app.use(cors({
   origin: [config.FRONTEND_URL, 'http://localhost:5173'],
   credentials: true,
@@ -36,22 +30,18 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With']
 }));
 
-// Body parsing middleware
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 app.use(cookieParser());
 
-// Compression middleware
 app.use(compression());
 
-// Logging middleware
 if (config.NODE_ENV === 'development') {
   app.use(morgan('dev'));
 } else {
   app.use(morgan('combined'));
 }
 
-// Swagger configuration
 const swaggerOptions = {
   definition: {
     openapi: '3.0.0',
@@ -68,7 +58,7 @@ const swaggerOptions = {
       {
         url: config.NODE_ENV === 'production' 
           ? 'https://your-domain.com/api' 
-          : `http://localhost:${config.PORT}/api`,
+          : `http://localhost:${config.PORT}`,
         description: config.NODE_ENV === 'production' ? 'Production server' : 'Development server'
       }
     ],
@@ -85,7 +75,7 @@ const swaggerOptions = {
       bearerAuth: []
     }]
   },
-  apis: ['./routes/*.js'], // Path to the API docs
+  apis: ['./routes/*.js'], 
 };
 
 const specs = swaggerJsdoc(swaggerOptions);
@@ -95,7 +85,6 @@ app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(specs, {
   customSiteTitle: "Doctor Appointment API Documentation"
 }));
 
-// Health check endpoint
 app.get('/health', (req, res) => {
   res.status(200).json({
     success: true,
@@ -106,12 +95,10 @@ app.get('/health', (req, res) => {
   });
 });
 
-// API routes
 app.use('/api/auth', authRoutes);
 app.use('/api/doctors', doctorRoutes);
 app.use('/api/appointments', appointmentRoutes);
 
-// Root endpoint
 app.get('/', (req, res) => {
   res.json({
     success: true,
@@ -122,7 +109,6 @@ app.get('/', (req, res) => {
   });
 });
 
-// Handle 404 - Route not found
 app.use('*', (req, res) => {
   res.status(404).json({
     success: false,
@@ -137,11 +123,9 @@ app.use('*', (req, res) => {
   });
 });
 
-// Global error handling middleware
 app.use((error, req, res, next) => {
   console.error('Error occurred:', error);
 
-  // Mongoose validation error
   if (error.name === 'ValidationError') {
     const errors = Object.values(error.errors).map(err => ({
       field: err.path,
@@ -155,7 +139,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // Mongoose duplicate key error
   if (error.code === 11000) {
     const field = Object.keys(error.keyValue)[0];
     return res.status(400).json({
@@ -164,7 +147,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // Mongoose cast error
   if (error.name === 'CastError') {
     return res.status(400).json({
       success: false,
@@ -172,7 +154,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // JWT errors
   if (error.name === 'JsonWebTokenError') {
     return res.status(401).json({
       success: false,
@@ -187,7 +168,6 @@ app.use((error, req, res, next) => {
     });
   }
 
-  // Default server error
   res.status(error.status || 500).json({
     success: false,
     message: config.NODE_ENV === 'development' 
@@ -197,16 +177,13 @@ app.use((error, req, res, next) => {
   });
 });
 
-// Handle unhandled promise rejections
 process.on('unhandledRejection', (err, promise) => {
   console.error('Unhandled Promise Rejection:', err);
-  // Close server & exit process
   server.close(() => {
     process.exit(1);
   });
 });
 
-// Handle uncaught exceptions
 process.on('uncaughtException', (err) => {
   console.error('Uncaught Exception:', err);
   process.exit(1);
@@ -216,11 +193,11 @@ const PORT = config.PORT || 5000;
 
 const server = app.listen(PORT, () => {
   console.log(`
-🚀 Server is running!
-📍 Port: ${PORT}
-🌍 Environment: ${config.NODE_ENV}
-📚 API Documentation: http://localhost:${PORT}/api-docs
-🔗 Health Check: http://localhost:${PORT}/health
+  Server is running!
+  Port: ${PORT}
+  Environment: ${config.NODE_ENV}
+  API Documentation: http://localhost:${PORT}/api-docs
+  Health Check: http://localhost:${PORT}/health
   `);
 });
 

@@ -5,29 +5,16 @@ const User = require('../models/User');
 const Doctor = require('../models/Doctor');
 const Appointment = require('../models/Appointment');
 
-// Sample data
 const sampleUsers = [
   {
-    name: 'Admin User',
-    email: 'admin@example.com',
+    name: 'Admin',
+    email: 'admin@doctorapp.com',
     password: 'Admin123',
     role: 'admin'
   },
   {
-    name: 'John Doe',
-    email: 'john@example.com',
-    password: 'User123',
-    role: 'user'
-  },
-  {
-    name: 'Jane Smith',
-    email: 'jane@example.com',
-    password: 'User123',
-    role: 'user'
-  },
-  {
-    name: 'Mike Johnson',
-    email: 'mike@example.com',
+    name: 'User',
+    email: 'user@doctorapp.com',
     password: 'User123',
     role: 'user'
   }
@@ -35,7 +22,7 @@ const sampleUsers = [
 
 const sampleDoctors = [
   {
-    name: 'Dr. Sarah Wilson',
+    name: 'Dr. A',
     specialty: 'Cardiology',
     qualifications: 'MD, FACC - Harvard Medical School',
     experience: 15,
@@ -62,7 +49,7 @@ const sampleDoctors = [
     totalReviews: 124
   },
   {
-    name: 'Dr. Michael Brown',
+    name: 'Dr. B',
     specialty: 'Dermatology',
     qualifications: 'MD, Dermatology Board Certified - Stanford University',
     experience: 12,
@@ -88,7 +75,7 @@ const sampleDoctors = [
     totalReviews: 89
   },
   {
-    name: 'Dr. Emily Davis',
+    name: 'Dr. C',
     specialty: 'Pediatrics',
     qualifications: 'MD, Pediatrics - Johns Hopkins University',
     experience: 10,
@@ -116,7 +103,7 @@ const sampleDoctors = [
     totalReviews: 156
   },
   {
-    name: 'Dr. Robert Lee',
+    name: 'Dr. D',
     specialty: 'Orthopedics',
     qualifications: 'MD, Orthopedic Surgery - Mayo Clinic',
     experience: 18,
@@ -142,7 +129,7 @@ const sampleDoctors = [
     totalReviews: 203
   },
   {
-    name: 'Dr. Lisa Anderson',
+    name: 'Dr. E',
     specialty: 'General Medicine',
     qualifications: 'MD, Internal Medicine - UCLA',
     experience: 8,
@@ -170,7 +157,6 @@ const sampleDoctors = [
   }
 ];
 
-// Connect to database
 const connectDB = async () => {
   try {
     await mongoose.connect(config.MONGODB_URI, {
@@ -184,7 +170,6 @@ const connectDB = async () => {
   }
 };
 
-// Clear existing data
 const clearDatabase = async () => {
   try {
     await User.deleteMany({});
@@ -197,7 +182,6 @@ const clearDatabase = async () => {
   }
 };
 
-// Seed users
 const seedUsers = async () => {
   try {
     const users = [];
@@ -221,7 +205,6 @@ const seedUsers = async () => {
   }
 };
 
-// Seed doctors
 const seedDoctors = async () => {
   try {
     const createdDoctors = await Doctor.insertMany(sampleDoctors);
@@ -233,18 +216,16 @@ const seedDoctors = async () => {
   }
 };
 
-// Seed appointments
 const seedAppointments = async (users, doctors) => {
   try {
     const appointments = [];
     const regularUsers = users.filter(user => user.role === 'user');
     
-    // Create some sample appointments
     const sampleAppointments = [
       {
         userId: regularUsers[0]._id,
         doctorId: doctors[0]._id,
-        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days from now
+        date: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
         time: '10:00',
         reason: 'Regular cardiology checkup',
         notes: 'Patient has history of heart murmur',
@@ -255,7 +236,7 @@ const seedAppointments = async (users, doctors) => {
       {
         userId: regularUsers[1]._id,
         doctorId: doctors[1]._id,
-        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000), // 3 days from now
+        date: new Date(Date.now() + 3 * 24 * 60 * 60 * 1000),
         time: '14:00',
         reason: 'Skin consultation',
         notes: 'New mole appeared last month',
@@ -266,7 +247,7 @@ const seedAppointments = async (users, doctors) => {
       {
         userId: regularUsers[2]._id,
         doctorId: doctors[2]._id,
-        date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000), // 14 days from now
+        date: new Date(Date.now() + 14 * 24 * 60 * 60 * 1000),
         time: '11:30',
         reason: 'Child vaccination',
         notes: 'Annual vaccination schedule',
@@ -277,7 +258,7 @@ const seedAppointments = async (users, doctors) => {
       {
         userId: regularUsers[0]._id,
         doctorId: doctors[3]._id,
-        date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000), // 5 days from now
+        date: new Date(Date.now() + 5 * 24 * 60 * 60 * 1000),
         time: '09:00',
         reason: 'Knee pain evaluation',
         notes: 'Pain after running injury',
@@ -288,7 +269,7 @@ const seedAppointments = async (users, doctors) => {
       {
         userId: regularUsers[1]._id,
         doctorId: doctors[4]._id,
-        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000), // 7 days ago
+        date: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
         time: '15:00',
         reason: 'Annual physical exam',
         notes: 'Complete physical examination',
@@ -299,7 +280,7 @@ const seedAppointments = async (users, doctors) => {
       {
         userId: regularUsers[2]._id,
         doctorId: doctors[0]._id,
-        date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000), // Tomorrow
+        date: new Date(Date.now() + 1 * 24 * 60 * 60 * 1000),
         time: '16:00',
         reason: 'Follow-up consultation',
         notes: 'Follow-up after previous treatment',
@@ -318,31 +299,24 @@ const seedAppointments = async (users, doctors) => {
   }
 };
 
-// Main seeding function
 const seedDatabase = async () => {
   try {
     console.log('Starting database seeding...');
     
-    // Connect to database
     await connectDB();
     
-    // Clear existing data
     await clearDatabase();
     
-    // Seed data
     const users = await seedUsers();
     const doctors = await seedDoctors();
     const appointments = await seedAppointments(users, doctors);
     
     console.log('\n=== DATABASE SEEDING COMPLETED ===');
     console.log('Sample accounts created:');
-    console.log('Admin: admin@example.com / Admin123');
-    console.log('User 1: john@example.com / User123');
-    console.log('User 2: jane@example.com / User123');
-    console.log('User 3: mike@example.com / User123');
+    console.log('Admin: admin@doctorapp.com / Admin123');
+    console.log('User 1: user@doctorapp.com / User123');
     console.log('\nYou can now start the server and test the API!');
     
-    // Close database connection
     await mongoose.connection.close();
     console.log('Database connection closed');
     
@@ -352,7 +326,6 @@ const seedDatabase = async () => {
   }
 };
 
-// Run seeding if called directly
 if (require.main === module) {
   seedDatabase();
 }
