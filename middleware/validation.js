@@ -140,10 +140,7 @@ const validateDoctor = [
     .matches(/^\+?[\d\s\-\(\)]{10,}$/)
     .withMessage('Invalid phone number format'),
   
-  body('contact.email')
-    .isEmail()
-    .withMessage('Invalid email format')
-    .normalizeEmail(),
+
   
   body('consultationFee')
     .isFloat({ min: 0 })
