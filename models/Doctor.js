@@ -136,19 +136,16 @@ const doctorSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Indexes for better query performance
 doctorSchema.index({ specialty: 1 });
 doctorSchema.index({ 'location.city': 1 });
 doctorSchema.index({ name: 'text', specialty: 'text', 'location.hospital': 'text' });
 doctorSchema.index({ isActive: 1 });
 doctorSchema.index({ rating: -1 });
 
-// Virtual for full address
 doctorSchema.virtual('fullAddress').get(function() {
   return `${this.location.address}, ${this.location.city}, ${this.location.state} ${this.location.zipCode}`;
 });
 
-// Static method to find doctors by specialty
 doctorSchema.statics.findBySpecialty = function(specialty) {
   return this.find({ 
     specialty: { $regex: specialty, $options: 'i' },
@@ -156,7 +153,6 @@ doctorSchema.statics.findBySpecialty = function(specialty) {
   });
 };
 
-// Static method to search doctors
 doctorSchema.statics.searchDoctors = function(searchTerm) {
   return this.find({
     $text: { $search: searchTerm },
@@ -164,12 +160,10 @@ doctorSchema.statics.searchDoctors = function(searchTerm) {
   }).sort({ score: { $meta: 'textScore' } });
 };
 
-// Instance method to check availability on specific day
 doctorSchema.methods.isAvailableOnDay = function(day) {
   return this.availability.some(slot => slot.day === day);
 };
 
-// Transform output
 doctorSchema.set('toJSON', { virtuals: true });
 
 module.exports = mongoose.model('Doctor', doctorSchema); 
