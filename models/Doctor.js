@@ -101,15 +101,6 @@ const doctorSchema = new mongoose.Schema({
       type: String,
       required: [true, 'Phone number is required'],
       match: [/^\+?[\d\s\-\(\)]{10,}$/, 'Please provide valid phone number']
-    },
-    email: {
-      type: String,
-      required: [true, 'Email is required'],
-      lowercase: true,
-      match: [
-        /^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/,
-        'Please provide a valid email'
-      ]
     }
   },
   consultationFee: {
