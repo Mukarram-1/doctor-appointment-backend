@@ -1,7 +1,6 @@
 const Appointment = require('../models/Appointment');
 const Doctor = require('../models/Doctor');
 const User = require('../models/User');
-const emailService = require('./emailService');
 
 class AppointmentService {
   async bookAppointment(userId, appointmentData) {
@@ -52,20 +51,9 @@ class AppointmentService {
       await appointment.save();
 
       await appointment.populate([
-        { path: 'userId', select: 'name email' },
+        { path: 'userId', select: 'name' },
         { path: 'doctorId', select: 'name specialty location contact' }
       ]);
-
-      emailService.sendAppointmentConfirmation(
-        appointment,
-        appointment.userId,
-        appointment.doctorId
-      ).then(() => {
-        appointment.emailSent = true;
-        appointment.save();
-      }).catch(error => {
-        console.error('Failed to send appointment confirmation email:', error);
-      });
 
       return appointment;
     } catch (error) {
@@ -152,7 +140,7 @@ class AppointmentService {
 
       const [appointments, total] = await Promise.all([
         Appointment.find(query)
-          .populate('userId', 'name email')
+          .populate('userId', 'name')
           .populate('doctorId', 'name specialty location.hospital')
           .sort(sortObj)
           .skip(skip)
@@ -177,7 +165,7 @@ class AppointmentService {
   async getAppointmentById(appointmentId, userId = null, userRole = null) {
     try {
       const appointment = await Appointment.findById(appointmentId)
-        .populate('userId', 'name email')
+        .populate('userId', 'name')
         .populate('doctorId', 'name specialty location contact');
 
       if (!appointment) {
@@ -199,7 +187,7 @@ class AppointmentService {
       const { status, cancellationReason, cancelledBy } = statusData;
 
       const appointment = await Appointment.findById(appointmentId)
-        .populate('userId', 'name email')
+        .populate('userId', 'name')
         .populate('doctorId', 'name specialty location contact');
 
       if (!appointment) {
@@ -224,25 +212,6 @@ class AppointmentService {
 
       await appointment.save();
 
-      if (status === 'confirmed') {
-        emailService.sendAppointmentConfirmation(
-          appointment,
-          appointment.userId,
-          appointment.doctorId
-        ).catch(error => {
-          console.error('Failed to send confirmation email:', error);
-        });
-      } else if (status === 'cancelled') {
-        emailService.sendAppointmentCancellation(
-          appointment,
-          appointment.userId,
-          appointment.doctorId,
-          cancellationReason
-        ).catch(error => {
-          console.error('Failed to send cancellation email:', error);
-        });
-      }
-
       return appointment;
     } catch (error) {
       throw error;
@@ -254,7 +223,7 @@ class AppointmentService {
       const { cancellationReason } = cancellationData;
 
       const appointment = await Appointment.findById(appointmentId)
-        .populate('userId', 'name email')
+        .populate('userId', 'name')
         .populate('doctorId', 'name specialty location contact');
 
       if (!appointment) {
@@ -278,15 +247,6 @@ class AppointmentService {
       appointment.cancelledBy = userRole === 'admin' ? 'admin' : 'user';
 
       await appointment.save();
-
-      emailService.sendAppointmentCancellation(
-        appointment,
-        appointment.userId,
-        appointment.doctorId,
-        cancellationReason
-      ).catch(error => {
-        console.error('Failed to send cancellation email:', error);
-      });
 
       return appointment;
     } catch (error) {
@@ -389,7 +349,7 @@ class AppointmentService {
       const { date, time, reason } = rescheduleData;
 
       const appointment = await Appointment.findById(appointmentId)
-        .populate('userId', 'name email')
+        .populate('userId', 'name')
         .populate('doctorId', 'name specialty location contact availability');
 
       if (!appointment) {
@@ -438,14 +398,6 @@ class AppointmentService {
       }
 
       await appointment.save();
-
-      emailService.sendAppointmentConfirmation(
-        appointment,
-        appointment.userId,
-        appointment.doctorId
-      ).catch(error => {
-        console.error('Failed to send rescheduled appointment email:', error);
-      });
 
       return appointment;
     } catch (error) {

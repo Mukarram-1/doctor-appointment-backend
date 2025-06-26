@@ -16,16 +16,6 @@ const config = {
     REFRESH_EXPIRE: process.env.JWT_REFRESH_EXPIRE,
   },
 
-  EMAIL: {
-    HOST: process.env.EMAIL_HOST || "smtp.gmail.com",
-    PORT: process.env.EMAIL_PORT || 587,
-    USER: process.env.EMAIL_USER || "",
-    PASS: process.env.EMAIL_PASS || "",
-    FROM:
-      process.env.EMAIL_FROM ||
-      "Doctor Appointment System <noreply@doctorapp.com>",
-  },
-
   RATE_LIMIT: {
     WINDOW_MS: process.env.RATE_LIMIT_WINDOW_MS || 900000, // 15 minutes
     MAX_REQUESTS: process.env.RATE_LIMIT_MAX_REQUESTS || 5,

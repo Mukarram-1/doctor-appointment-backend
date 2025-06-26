@@ -87,10 +87,6 @@ const appointmentSchema = new mongoose.Schema({
     required: function() {
       return this.status === 'completed';
     }
-  },
-  emailSent: {
-    type: Boolean,
-    default: false
   }
 }, {
   timestamps: true
@@ -147,7 +143,7 @@ appointmentSchema.statics.findByDoctor = function(doctorId, status = null) {
   if (status) query.status = status;
   
   return this.find(query)
-    .populate('userId', 'name email')
+    .populate('userId', 'name')
     .sort({ date: -1, time: -1 });
 };
 appointmentSchema.statics.hasConflict = function(doctorId, date, time, excludeId = null) {
@@ -173,8 +169,8 @@ appointmentSchema.statics.getUpcomingAppointments = function(days = 7) {
     date: { $gte: today, $lte: futureDate },
     status: { $in: ['pending', 'confirmed'] }
   })
-  .populate('userId', 'name email')
-  .populate('doctorId', 'name specialty contact.email')
+  .populate('userId', 'name')
+  .populate('doctorId', 'name specialty')
   .sort({ date: 1, time: 1 });
 };
 appointmentSchema.pre('save', function(next) {

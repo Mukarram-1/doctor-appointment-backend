@@ -1,6 +1,5 @@
 const User = require('../models/User');
 const JWTUtils = require('../utils/jwt');
-const emailService = require('./emailService');
 
 class AuthService {
   async register(userData) {
@@ -22,10 +21,6 @@ class AuthService {
       const tokens = JWTUtils.generateTokenPair(tokenPayload);
       
       await user.addRefreshToken(tokens.refreshToken);
-
-      emailService.sendWelcomeEmail(user).catch(error => {
-        console.error('Failed to send welcome email:', error);
-      });
 
       return {
         user: user.toJSON(),
