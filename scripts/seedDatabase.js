@@ -41,8 +41,7 @@ const sampleDoctors = [
       zipCode: '10001'
     },
     contact: {
-      phone: '+1-555-0101',
-      email: 'dr.wilson@citygeneral.com'
+      phone: '+1-555-0101'
     },
     consultationFee: 200,
     rating: 4.8,
@@ -67,8 +66,7 @@ const sampleDoctors = [
       zipCode: '90210'
     },
     contact: {
-      phone: '+1-555-0102',
-      email: 'dr.brown@metroskin.com'
+      phone: '+1-555-0102'
     },
     consultationFee: 150,
     rating: 4.6,
@@ -95,8 +93,7 @@ const sampleDoctors = [
       zipCode: '60601'
     },
     contact: {
-      phone: '+1-555-0103',
-      email: 'dr.davis@childrenshealth.com'
+      phone: '+1-555-0103'
     },
     consultationFee: 120,
     rating: 4.9,
@@ -121,8 +118,7 @@ const sampleDoctors = [
       zipCode: '33101'
     },
     contact: {
-      phone: '+1-555-0104',
-      email: 'dr.lee@sportsmed.com'
+      phone: '+1-555-0104'
     },
     consultationFee: 250,
     rating: 4.7,
@@ -148,8 +144,7 @@ const sampleDoctors = [
       zipCode: '98101'
     },
     contact: {
-      phone: '+1-555-0105',
-      email: 'dr.anderson@community.com'
+      phone: '+1-555-0105'
     },
     consultationFee: 100,
     rating: 4.5,
