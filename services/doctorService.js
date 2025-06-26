@@ -94,14 +94,6 @@ class DoctorService {
 
   async createDoctor(doctorData) {
     try {
-      const existingDoctor = await Doctor.findOne({ 
-        'contact.email': doctorData.contact.email 
-      });
-      
-      if (existingDoctor) {
-        throw new Error('Doctor with this email already exists');
-      }
-
       const doctor = new Doctor(doctorData);
       await doctor.save();
 
