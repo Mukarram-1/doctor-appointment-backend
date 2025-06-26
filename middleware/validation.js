@@ -1,6 +1,5 @@
 const { body, param, query, validationResult } = require('express-validator');
 
-// Validation error handler
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   
@@ -21,7 +20,6 @@ const handleValidationErrors = (req, res, next) => {
   next();
 };
 
-// User registration validation
 const validateUserRegistration = [
   body('name')
     .trim()
@@ -52,7 +50,6 @@ const validateUserRegistration = [
   handleValidationErrors
 ];
 
-// User login validation
 const validateUserLogin = [
   body('email')
     .trim()
@@ -69,7 +66,6 @@ const validateUserLogin = [
   handleValidationErrors
 ];
 
-// Doctor creation/update validation
 const validateDoctor = [
   body('name')
     .trim()
@@ -156,7 +152,6 @@ const validateDoctor = [
   handleValidationErrors
 ];
 
-// Appointment creation validation
 const validateAppointment = [
   body('doctorId')
     .notEmpty()
@@ -205,7 +200,6 @@ const validateAppointment = [
   handleValidationErrors
 ];
 
-// Appointment status update validation
 const validateAppointmentStatus = [
   body('status')
     .isIn(['pending', 'confirmed', 'cancelled', 'completed'])
@@ -226,7 +220,6 @@ const validateAppointmentStatus = [
   handleValidationErrors
 ];
 
-// MongoDB ObjectId validation
 const validateObjectId = (field) => [
   param(field)
     .isMongoId()
@@ -234,7 +227,6 @@ const validateObjectId = (field) => [
   handleValidationErrors
 ];
 
-// Pagination validation
 const validatePagination = [
   query('page')
     .optional()
@@ -259,7 +251,6 @@ const validatePagination = [
   handleValidationErrors
 ];
 
-// Search validation
 const validateSearch = [
   query('search')
     .optional()
@@ -296,7 +287,6 @@ const validateSearch = [
   handleValidationErrors
 ];
 
-// Refresh token validation
 const validateRefreshToken = [
   body('refreshToken')
     .notEmpty()

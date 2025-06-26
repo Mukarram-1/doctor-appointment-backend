@@ -1,10 +1,8 @@
 const JWTUtils = require('../utils/jwt');
 const User = require('../models/User');
 
-// Authentication middleware
 const authenticate = async (req, res, next) => {
   try {
-    // Get token from header
     const authHeader = req.header('Authorization');
     
     if (!authHeader) {
@@ -14,13 +12,10 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    // Extract token from Bearer format
     const token = JWTUtils.extractTokenFromHeader(authHeader);
     
-    // Verify token
     const decoded = JWTUtils.verifyAccessToken(token);
     
-    // Find user and attach to request
     const user = await User.findById(decoded.userId).select('-password -refreshTokens');
     
     if (!user) {
@@ -37,7 +32,6 @@ const authenticate = async (req, res, next) => {
       });
     }
 
-    // Attach user to request
     req.user = user;
     req.userId = user._id;
     req.userRole = user.role;
@@ -59,7 +53,6 @@ const authenticate = async (req, res, next) => {
   }
 };
 
-// Authorization middleware for role-based access
 const authorize = (...roles) => {
   return (req, res, next) => {
     if (!req.user) {
@@ -80,7 +73,6 @@ const authorize = (...roles) => {
   };
 };
 
-// Optional authentication middleware (doesn't fail if no token)
 const optionalAuth = async (req, res, next) => {
   try {
     const authHeader = req.header('Authorization');
@@ -102,18 +94,14 @@ const optionalAuth = async (req, res, next) => {
     
     next();
   } catch (error) {
-    // Continue without authentication
     next();
   }
 };
 
-// Admin only middleware
 const adminOnly = [authenticate, authorize('admin')];
 
-// User only middleware
 const userOnly = [authenticate, authorize('user')];
 
-// User or Admin middleware
 const authenticated = [authenticate, authorize('user', 'admin')];
 
 module.exports = {
