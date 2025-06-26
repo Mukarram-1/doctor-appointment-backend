@@ -267,18 +267,6 @@ GET /api/doctors?page=1&limit=10&sort=name&order=asc&specialty=Cardiology&search
 GET /api/appointments?page=1&limit=10&status=pending&doctorId=123&dateFrom=2024-01-01&dateTo=2024-12-31
 ```
 
-## 🧪 Testing
-
-Run the API test script:
-```bash
-# Make executable (Linux/Mac)
-chmod +x test-api.sh
-./test-api.sh
-
-# Windows (PowerShell)
-.\test-api.sh
-```
-
 ## 📊 Sample Data
 
 ### Default Users (created by seed script)
