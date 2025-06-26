@@ -4,12 +4,10 @@ const User = require('../models/User');
 const emailService = require('./emailService');
 
 class AppointmentService {
-  // Book a new appointment
   async bookAppointment(userId, appointmentData) {
     try {
       const { doctorId, date, time, reason, notes, symptoms } = appointmentData;
 
-      // Verify doctor exists and is active
       const doctor = await Doctor.findById(doctorId);
       if (!doctor) {
         throw new Error('Doctor not found');
@@ -18,7 +16,6 @@ class AppointmentService {
         throw new Error('Doctor is not available');
       }
 
-      // Check if doctor is available on the requested day and time
       const appointmentDate = new Date(date);
       const dayOfWeek = appointmentDate.toLocaleDateString('en-US', { weekday: 'long' });
       
@@ -36,13 +33,11 @@ class AppointmentService {
         throw new Error('Doctor is not available at the requested time');
       }
 
-      // Check for appointment conflicts
       const existingAppointment = await Appointment.hasConflict(doctorId, appointmentDate, time);
       if (existingAppointment) {
         throw new Error('Time slot is already booked');
       }
 
-      // Create appointment
       const appointment = new Appointment({
         userId,
         doctorId,
@@ -56,19 +51,16 @@ class AppointmentService {
 
       await appointment.save();
 
-      // Populate user and doctor details
       await appointment.populate([
         { path: 'userId', select: 'name email' },
         { path: 'doctorId', select: 'name specialty location contact' }
       ]);
 
-      // Send confirmation email (don't wait for it)
       emailService.sendAppointmentConfirmation(
         appointment,
         appointment.userId,
         appointment.doctorId
       ).then(() => {
-        // Update email sent status
         appointment.emailSent = true;
         appointment.save();
       }).catch(error => {
@@ -81,7 +73,6 @@ class AppointmentService {
     }
   }
 
-  // Get appointments for a user
   async getUserAppointments(userId, options = {}) {
     try {
       const {
@@ -127,7 +118,6 @@ class AppointmentService {
     }
   }
 
-  // Get all appointments (Admin only)
   async getAllAppointments(options = {}) {
     try {
       const {
@@ -184,7 +174,6 @@ class AppointmentService {
     }
   }
 
-  // Get appointment by ID
   async getAppointmentById(appointmentId, userId = null, userRole = null) {
     try {
       const appointment = await Appointment.findById(appointmentId)
@@ -195,7 +184,6 @@ class AppointmentService {
         throw new Error('Appointment not found');
       }
 
-      // Check if user can access this appointment
       if (userRole !== 'admin' && userId && appointment.userId._id.toString() !== userId.toString()) {
         throw new Error('Access denied');
       }
@@ -206,7 +194,6 @@ class AppointmentService {
     }
   }
 
-  // Update appointment status (Admin only)
   async updateAppointmentStatus(appointmentId, statusData, updatedBy) {
     try {
       const { status, cancellationReason, cancelledBy } = statusData;
@@ -219,22 +206,24 @@ class AppointmentService {
         throw new Error('Appointment not found');
       }
 
-      // Validate status transition
       if (!this.isValidStatusTransition(appointment.status, status)) {
         throw new Error(`Cannot change status from ${appointment.status} to ${status}`);
       }
 
-      // Update appointment
       appointment.status = status;
-      
-      if (status === 'cancelled') {
+      const now = new Date();
+      if (status === 'confirmed') {
+        appointment.confirmedAt = now;
+      } else if (status === 'cancelled') {
         appointment.cancellationReason = cancellationReason;
         appointment.cancelledBy = cancelledBy || 'admin';
+        appointment.cancelledAt = now;
+      } else if (status === 'completed') {
+        appointment.completedAt = now;
       }
 
       await appointment.save();
 
-      // Send email notification based on status
       if (status === 'confirmed') {
         emailService.sendAppointmentConfirmation(
           appointment,
@@ -260,7 +249,6 @@ class AppointmentService {
     }
   }
 
-  // Cancel appointment (User or Admin)
   async cancelAppointment(appointmentId, userId, userRole, cancellationData) {
     try {
       const { cancellationReason } = cancellationData;
@@ -273,12 +261,10 @@ class AppointmentService {
         throw new Error('Appointment not found');
       }
 
-      // Check if user can cancel this appointment
       if (userRole !== 'admin' && appointment.userId._id.toString() !== userId.toString()) {
         throw new Error('Access denied');
       }
 
-      // Check if appointment can be cancelled
       if (!appointment.canBeCancelled) {
         throw new Error('Appointment cannot be cancelled (must be at least 24 hours before appointment time)');
       }
@@ -287,14 +273,12 @@ class AppointmentService {
         throw new Error('Only pending or confirmed appointments can be cancelled');
       }
 
-      // Update appointment
       appointment.status = 'cancelled';
       appointment.cancellationReason = cancellationReason;
       appointment.cancelledBy = userRole === 'admin' ? 'admin' : 'user';
 
       await appointment.save();
 
-      // Send cancellation email
       emailService.sendAppointmentCancellation(
         appointment,
         appointment.userId,
@@ -310,7 +294,6 @@ class AppointmentService {
     }
   }
 
-  // Get appointment statistics
   async getAppointmentStats(filters = {}) {
     try {
       const { doctorId, dateFrom, dateTo } = filters;
@@ -345,7 +328,6 @@ class AppointmentService {
         status: { $in: ['pending', 'confirmed'] }
       });
 
-      // Revenue calculation (only for completed appointments)
       const revenue = await Appointment.aggregate([
         {
           $match: {
@@ -378,7 +360,6 @@ class AppointmentService {
     }
   }
 
-  // Get upcoming appointments (for reminders)
   async getUpcomingAppointments(days = 1) {
     try {
       return await Appointment.getUpcomingAppointments(days);
@@ -387,25 +368,22 @@ class AppointmentService {
     }
   }
 
-  // Helper method to parse time string to minutes
   parseTime(timeString) {
     const [hours, minutes] = timeString.split(':').map(Number);
     return hours * 60 + minutes;
   }
 
-  // Helper method to validate status transitions
   isValidStatusTransition(currentStatus, newStatus) {
     const validTransitions = {
       'pending': ['confirmed', 'cancelled'],
       'confirmed': ['completed', 'cancelled'],
-      'cancelled': [], // Cannot change from cancelled
-      'completed': [] // Cannot change from completed
+      'cancelled': [],
+      'completed': []
     };
 
     return validTransitions[currentStatus]?.includes(newStatus) || false;
   }
 
-  // Reschedule appointment
   async rescheduleAppointment(appointmentId, userId, userRole, rescheduleData) {
     try {
       const { date, time, reason } = rescheduleData;
@@ -418,7 +396,6 @@ class AppointmentService {
         throw new Error('Appointment not found');
       }
 
-      // Check if user can reschedule this appointment
       if (userRole !== 'admin' && appointment.userId._id.toString() !== userId.toString()) {
         throw new Error('Access denied');
       }
@@ -427,7 +404,6 @@ class AppointmentService {
         throw new Error('Only pending or confirmed appointments can be rescheduled');
       }
 
-      // Check if new time slot is available
       const newDate = new Date(date);
       const existingAppointment = await Appointment.hasConflict(
         appointment.doctorId._id,
@@ -440,7 +416,6 @@ class AppointmentService {
         throw new Error('New time slot is already booked');
       }
 
-      // Verify doctor availability for new time
       const dayOfWeek = newDate.toLocaleDateString('en-US', { weekday: 'long' });
       const isDoctorAvailable = appointment.doctorId.availability.some(slot => {
         if (slot.day !== dayOfWeek) return false;
@@ -456,7 +431,6 @@ class AppointmentService {
         throw new Error('Doctor is not available at the new requested time');
       }
 
-      // Update appointment
       appointment.date = newDate;
       appointment.time = time;
       if (reason) {
@@ -465,7 +439,6 @@ class AppointmentService {
 
       await appointment.save();
 
-      // Send updated confirmation email
       emailService.sendAppointmentConfirmation(
         appointment,
         appointment.userId,
